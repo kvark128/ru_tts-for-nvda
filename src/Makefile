@@ -21,7 +21,7 @@ clean:
 	rm -f *.nvda-addon
 
 %.o: %.c
-	$(CC) -c -I../external/sonic $(CFLAGS) $< -o $@
+	$(CC) -c -I../external/ru_tts/src -I../external/sonic $(CFLAGS) $< -o $@
 
 librutts.a: utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 	ar rcs $@ $^
