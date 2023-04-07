@@ -1,0 +1,6 @@
+[submodule "external/ru_tts"]
+	path = external/ru_tts
+	url = https://github.com/poretsky/ru_tts
+[submodule "external/sonic"]
+	path = external/sonic
+	url = https://github.com/waywardgeek/sonic

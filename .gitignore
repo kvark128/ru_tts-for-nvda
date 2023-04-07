@@ -1,0 +1,7 @@
+*.exe
+*.dll
+*.o
+*.a
+*.mo
+*.db
+*.nvda-addon

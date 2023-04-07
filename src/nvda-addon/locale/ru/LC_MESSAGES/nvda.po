@@ -1,0 +1,33 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: ru_tts\n"
+"POT-Creation-Date: 2021-11-17 18:16+0800\n"
+"PO-Revision-Date: 2021-11-17 18:20+0800\n"
+"Last-Translator: Kvark <kvark128@yandex.ru>\n"
+"Language-Team: \n"
+"Language: ru_RU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.11\n"
+"X-Poedit-Basepath: .\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Poedit-SearchPath-0: ../../../../ru_tts\n"
+
+#: ../../../../ru_tts/synthDrivers/ru_tts/__init__.py:385
+msgid "Pause between phrases"
+msgstr "Пауза между фразами"
+
+#: ../../../../ru_tts/synthDrivers/ru_tts/__init__.py:420
+msgid "Use RuLex pronunciation dictionary"
+msgstr "Использовать словарь произношений RuLex"
+
+#: ../../../../ru_tts/synthDrivers/ru_tts/__init__.py:594
+msgid "Male"
+msgstr "Мужской"
+
+#: ../../../../ru_tts/synthDrivers/ru_tts/__init__.py:594
+msgid "Female"
+msgstr "Женский"
