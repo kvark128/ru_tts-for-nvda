@@ -5,10 +5,12 @@
 CC = gcc
 CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
-NVDA_ADDON = nvda-addon
+NVDA_ADDON_DIR = nvda-addon
+NVDA_SYNTH_DIR = $(NVDA_ADDON_DIR)/synthDrivers/ru_tts
+PO_FILES = $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/nvda.po
 LEXICON_DIR = ../external/rulex/data
 LEXHOLDER_DIR = ../external/rulex/src
-VPATH = ../external/ru_tts/src:../external/sonic:../external/rulex/src
+VPATH = ../external/ru_tts/src ../external/sonic ../external/rulex/src $(NVDA_SYNTH_DIR)
 
 all: ru_tts.nvda-addon
 
@@ -16,8 +18,8 @@ all: ru_tts.nvda-addon
 clean:
 	rm -f *.o *.a *.exe *.dll *.db $(LEXHOLDER_DIR)/*.exe
 	$(MAKE) -s -C $(LEXICON_DIR) clean
-	cd $(NVDA_ADDON)/synthDrivers/ru_tts && rm -f *.dll *.db
-	rm -f $(NVDA_ADDON)/locale/*/LC_MESSAGES/*.mo
+	cd $(NVDA_SYNTH_DIR) && rm -f *.dll *.db
+	rm -f $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/*.mo
 	rm -f *.nvda-addon
 
 %.o: %.c
@@ -27,24 +29,22 @@ librutts.a: utterance.o transcription.o time_planner.o text2speech.o synth.o spe
 	ar rcs $@ $^
 
 lexholder.exe: lexholder.o lexdb.o coder.o
-	$(CC) -s $(CFLAGS) -o $@ $^ $(RULEX_LIBS)
-	install -p $@ $(LEXHOLDER_DIR)/$@
+	$(CC) -s $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(RULEX_LIBS)
 
 ru_tts.dll: ru_tts_nvda.o librutts.a sonic.o
-	$(CC) -shared -s $(CFLAGS) -o $@ $^
+	$(CC) -shared -s $(CFLAGS) -o $(NVDA_SYNTH_DIR)/$@ $^
 
 rulex.dll: lexdb.o coder.o
-	$(CC) -shared -s $(CFLAGS) -o $@ $^ $(RULEX_LIBS)
+	$(CC) -shared -s $(CFLAGS) -o $(NVDA_SYNTH_DIR)/$@ $^ $(RULEX_LIBS)
 
 rulex.db: lexholder.exe
 	$(MAKE) -C $(LEXICON_DIR)
-	install -p $(LEXICON_DIR)/lexicon $@
+	install -p $(LEXICON_DIR)/lexicon $(NVDA_SYNTH_DIR)/$@
 
-ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db
-	for dir in $(NVDA_ADDON)/locale/*/LC_MESSAGES; do \
+ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec $(NVDA_ADDON_DIR)/manifest.ini $(PO_FILES)
+	for dir in $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES; do \
 	msgfmt -o $$dir/nvda.mo $$dir/nvda.po; done
-	cp $^ $(NVDA_ADDON)/synthDrivers/ru_tts
-	cd $(NVDA_ADDON) && 7z a -tzip ../$@ *
+	cd $(NVDA_ADDON_DIR) && 7z a -tzip ../$@ *
 
 synth.o: synth.c synth.h transcription.h soundscript.h ru_tts.h
 numerics.o: numerics.c numerics.h transcription.h sink.h synth.h ru_tts.h
