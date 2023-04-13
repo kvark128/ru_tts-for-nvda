@@ -41,7 +41,7 @@ rulex.db: lexholder.exe
 	$(MAKE) -C $(LEXICON_DIR)
 	install -p $(LEXICON_DIR)/lexicon $(NVDA_SYNTH_DIR)/$@
 
-ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec $(NVDA_ADDON_DIR)/manifest.ini $(PO_FILES)
+ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec COPYING.txt $(NVDA_ADDON_DIR)/manifest.ini $(PO_FILES)
 	for dir in $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES; do \
 	msgfmt -o $$dir/nvda.mo $$dir/nvda.po; done
 	cd $(NVDA_ADDON_DIR) && 7z a -tzip ../$@ *

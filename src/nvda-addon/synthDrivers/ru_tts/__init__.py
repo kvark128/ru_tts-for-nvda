@@ -1,5 +1,6 @@
-# Copyright (C) 2021 - 2023 Alexander Linkov <kvark128@yandex.ru>
-# This file is distributed under the MIT license
+# Copyright (C) 2021 - 2023 Александр Линьков <kvark128@yandex.ru>
+# This file is covered by the GNU General Public License.
+# See the file COPYING.txt for more details.
 
 import os.path
 import threading
@@ -32,23 +33,23 @@ RU_TTS_CALLBACK = CFUNCTYPE(c_int, c_void_p, c_size_t, c_void_p)
 BRAILLE_DOT_LABELS = ("первая", "вторая", "третья", "четвёртая", "пятая", "шестая", "седьмая", "восьмая")
 
 SINGLE_CHARACTER_TRANSLATION_DICT = {
-	# Round brackets should not be spoken
+	# Подавляем произношение круглых скобок, заменяя их на пробелы
 	ord('('): ' ',
 	ord(')'): ' ',
-	# Accent mark support
+	# Добавляем поддержку знака ударения
 	ord('\u0301'): '+',
 }
 
-# Regular expressions for pronunciation correction
+# Регулярные выражения для коррекции произношения
 RE_WORDS = re.compile("[а-яё\u0301]+", re.I)
 RE_ABBREVIATIONS = re.compile(r"(?<![а-яёa-z])[bcdfghjklmnpqrstvwxzбвгджзклмнпрстфхцчшщ]{2,}(?![а-яёa-z])", re.I)
 RE_LETTER_AFTER_NUMBER = re.compile(r"\d[а-яёa-z]", re.I)
 RE_SINGLE_LATIN = re.compile(r"(?<![а-яёa-z])[a-z](?![а-яёa-z])", re.I)
 RE_BRAILLE_PATTERNS = re.compile(r"[\u2800-\u28ff]")
 
-# Ranges of Possible Values for rate, pitch and intonation
+# Диапазоны допустимых значений для скорости, высоты и интонации речи
 RATE_MIN = 20
-RATE_MAX = 250 # engine supports max value of 500, but sound distortion is observed at value over 250
+RATE_MAX = 250 # движок поддерживает максимальное значение 500, но при значении более 250 наблюдается искажение звука
 PITCH_MIN = 50
 PITCH_MAX = 300
 INTONATION_MIN = 0
@@ -60,17 +61,17 @@ class TTS(Structure): pass
 @POINTER
 class RULEXDB(Structure): pass
 
-# Data size limits for rulex database
+# Ограничения на размер некоторых значений при работе с базой данных rulex
 RULEXDB_MAX_KEY_SIZE = 50
 RULEXDB_MAX_RECORD_SIZE = 200
 RULEXDB_BUFSIZE = 256
 
-# Database access modes for rulex database
+# Режимы доступа к базе данных rulex
 RULEXDB_SEARCH = 0
 RULEXDB_UPDATE = 1
 RULEXDB_CREATE = 2
 
-# Return codes for rulex database
+# Коды возврата при работе с базой данных rulex
 RULEXDB_SUCCESS = 0
 RULEXDB_SPECIAL = 1
 RULEXDB_FAILURE = -1
@@ -80,10 +81,10 @@ RULEXDB_EINVREC = -4
 RULEXDB_EPARM = -5
 RULEXDB_EACCESS = -6
 
-# TTS control flags
-DEC_SEP_POINT = 1 # Use point as a decimal separator
-DEC_SEP_COMMA = 2 # Use comma as a decimal separator
-USE_ALTERNATIVE_VOICE = 4 # Use female voice
+# Управляющие флаги для поля flags в структуре RU_TTS_CONF_T
+DEC_SEP_POINT = 1 # Использовать точку в качестве десятичного разделителя
+DEC_SEP_COMMA = 2 # Использовать запятую в качестве десятичного разделителя
+USE_ALTERNATIVE_VOICE = 4 # Использовать женский голос
 
 class RU_TTS_CONF_T(Structure):
 	_fields_ = [
@@ -101,14 +102,14 @@ class RU_TTS_CONF_T(Structure):
 		("flags", c_int),
 	]
 
-# Synthesizer parameters adjustable through the graphical interface
+# Параметры синтезатора настраиваемые через графический интерфейс
 SPEECH_RATE_PARAM = "speech_rate"
 VOICE_PITCH_PARAM = "voice_pitch"
 INTONATION_PARAM = "intonation"
 GENERAL_GAP_FACTOR_PARAM = "general_gap_factor"
 FLAGS_PARAM = "flags"
 
-# Return codes for wave consumer
+# Возвращаемые значения для функции обратного вызова, обрабатывающей аудиоданные
 CALLBACK_CONTINUE_SYNTHESIS = 0
 CALLBACK_ABORT_SYNTHESIS = 1
 
@@ -135,7 +136,7 @@ class AudioCallback(object):
 class RulexDict(object):
 
 	def __init__(self, db_path):
-		# Loading rulex.dll. Database for the pronunciation dictionary
+		# Загрузка rulex.dll. Драйвера базы данных для словаря произношений
 		self.__rulexdb = CDLL(RULEX_LIB_PATH)
 		self.__rulexdb.rulexdb_open.argtypes = (c_char_p, c_int)
 		self.__rulexdb.rulexdb_open.restype = RULEXDB
@@ -143,8 +144,8 @@ class RulexDict(object):
 		self.__rulexdb.rulexdb_search.restype = c_int
 		self.__rulexdb.rulexdb_close.argtypes = (RULEXDB,)
 
-		# Open the dictionary database and create a buffer in which we will receive search results for this db
-		# When the database is opened, a pointer to the string with the file path is passed to the driver. This string is used later, so we need to protect it from garbage collection
+		# Открытие базы данных со словарём произношений и создание буфера в который мы будем получать результаты поиска по этой базе
+		# При открытии базы данных драйверу передаётся указатель на строку с путём к файлу. Эта строка используется позже, поэтому нам необходимо защитить ее от сборки мусора
 		self.__searchBuf = create_string_buffer(RULEXDB_BUFSIZE)
 		self.__db_path = db_path.encode("mbcs")
 		self.__db = self.__rulexdb.rulexdb_open(self.__db_path, RULEXDB_SEARCH)
@@ -245,7 +246,7 @@ class SynthDriver(SynthDriver):
 	supportedNotifications = {synthIndexReached, synthDoneSpeaking}
 
 	def __init__(self):
-		# Load the main synthesizer engine
+		# Первым делом загружаем основной движок синтезатора
 		self.__ru_tts_lib = CDLL(RU_TTS_LIB_PATH)
 		self.__ru_tts_lib.tts_create.argtypes = (RU_TTS_CALLBACK,)
 		self.__ru_tts_lib.tts_create.restype = TTS
@@ -331,10 +332,10 @@ class SynthDriver(SynthDriver):
 		self.__config = None
 		self.__ru_tts_lib.tts_destroy(self.__tts)
 		self.__tts = None
-		# Preventing the appearance of a circular references
+		# Предотвращаем образование циклических ссылок
 		self.__audio_callback = None
 		self.__c_audio_callback = None
-		# Attempt to unload all used DLLs
+		# Пробуем выгрузить основной движок синтезатора
 		try:
 			windll.kernel32.FreeLibrary(self.__ru_tts_lib._handle)
 		except Exception:
@@ -458,7 +459,7 @@ class SynthDriver(SynthDriver):
 		self.__rate = value
 		rate = self._percentToParam(self.__rate, RATE_MIN, RATE_MAX)
 		self._setParameter(SPEECH_RATE_PARAM, rate)
-		# Gap factor depends on the speech rate. Is necessary to calculate it again
+		# Коэффициент паузы зависит от скорости речи. Необходимо вычислить его заново
 		self.__gap_factor_max = self._maxGapRange(rate)
 		gap_factor = self._percentToParam(self.__gapFactor, 0, self.__gap_factor_max)
 		self._setParameter(GENERAL_GAP_FACTOR_PARAM, gap_factor)
