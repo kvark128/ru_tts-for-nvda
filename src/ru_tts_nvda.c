@@ -20,6 +20,7 @@ int writeToConsumer(const TTS_t *tts, const int minSamples) {
 		int n = sonicReadShortFromStream(tts->stream, tts->buffer, WAVE_SIZE);
 		if (tts->consumer(tts->buffer, n, NULL)) {
 			// Пользователь прервал синтез. Необходимо сбросить внутренние буферы sonic
+			sonicFlushStream(tts->stream);
 			while (sonicReadShortFromStream(tts->stream, tts->buffer, WAVE_SIZE));
 			return FAILURE;
 		}
