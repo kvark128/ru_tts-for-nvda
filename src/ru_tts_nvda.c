@@ -1,5 +1,5 @@
-// Copyright (C) 2021 - 2023 Alexander Linkov <kvark128@yandex.ru>
-// This file is distributed under the MIT license
+// Copyright (C) 2021 - 2023 Александр Линьков <kvark128@yandex.ru>
+// Этот файл распространяется под лицензией MIT
 
 #include <stdlib.h>
 
@@ -19,7 +19,7 @@ int writeToConsumer(const TTS_t *tts, const int minSamples) {
 	while (numSamples >= minSamples) {
 		int n = sonicReadShortFromStream(tts->stream, tts->buffer, WAVE_SIZE);
 		if (tts->consumer(tts->buffer, n, NULL)) {
-			// User interrupted synthesis. Reset sonic buffers.
+			// Пользователь прервал синтез. Необходимо сбросить внутренние буферы sonic
 			while (sonicReadShortFromStream(tts->stream, tts->buffer, WAVE_SIZE));
 			return FAILURE;
 		}
@@ -32,7 +32,7 @@ int audio_callback(void *buffer, size_t size, void *user_data) {
 	signed char *samples = (signed char*) buffer;
 	TTS_t *tts = (TTS_t*) user_data;
 	for (int i = 0; i < size; i++) {
-		// Converting signed char to unsigned char
+		// Sonic не поддерживает аудиоданные в форме signed char. Преобразуем signed char в unsigned char
 		samples[i] ^= 0x80;
 	}
 	if (sonicWriteUnsignedCharToStream(tts->stream, buffer, size) == 0) {
@@ -49,7 +49,7 @@ TTS_t* tts_create(ru_tts_callback wave_consumer) {
 	if (stream == NULL) {
 		return NULL;
 	}
-	// Buffer for short samples
+	// Буфер для short-сэмплов
 	void *buffer = malloc(WAVE_SIZE * sizeof(short));
 	if (buffer == NULL) {
 		sonicDestroyStream(stream);
