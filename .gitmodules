@@ -4,3 +4,6 @@
 [submodule "external/ru_tts"]
 	path = external/ru_tts
 	url = https://github.com/poretsky/ru_tts
+[submodule "external/rulex"]
+	path = external/rulex
+	url = https://github.com/poretsky/rulex

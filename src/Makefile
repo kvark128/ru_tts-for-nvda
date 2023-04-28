@@ -3,7 +3,7 @@
 # Copyright (C) 2023 Alexander Linkov <kvark128@yandex.ru>
 
 CC = gcc
-CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2
+CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
 NVDA_ADDON_DIR = nvda-addon
 NVDA_SYNTH_DIR = $(NVDA_ADDON_DIR)/synthDrivers/ru_tts
