@@ -5,6 +5,7 @@
 CC = gcc
 CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
+RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 NVDA_ADDON_DIR = nvda-addon
 NVDA_SYNTH_DIR = $(NVDA_ADDON_DIR)/synthDrivers/ru_tts
 PO_FILES = $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/nvda.po
@@ -16,22 +17,19 @@ all: ru_tts.nvda-addon
 
 .SILENT: clean
 clean:
-	rm -f *.o *.a *.exe *.dll *.db $(LEXHOLDER_DIR)/*.exe
+	rm -f *.o *.nvda-addon
 	$(MAKE) -s -C $(LEXICON_DIR) clean
+	cd $(LEXHOLDER_DIR) && rm -f *.exe
 	cd $(NVDA_SYNTH_DIR) && rm -f *.dll *.db
 	rm -f $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/*.mo
-	rm -f *.nvda-addon
 
 %.o: %.c
 	$(CC) -c -I../external/ru_tts/src -I../external/sonic $(CFLAGS) $< -o $@
 
-librutts.a: utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
-	ar rcs $@ $^
-
 lexholder.exe: lexholder.o lexdb.o coder.o
 	$(CC) -s $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(RULEX_LIBS)
 
-ru_tts.dll: ru_tts_nvda.o librutts.a sonic.o
+ru_tts.dll: ru_tts_nvda.o sonic.o $(RU_TTS_OBJS)
 	$(CC) -shared -s $(CFLAGS) -o $(NVDA_SYNTH_DIR)/$@ $^
 
 rulex.dll: lexdb.o coder.o
