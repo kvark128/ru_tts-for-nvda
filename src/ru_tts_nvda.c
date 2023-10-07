@@ -42,7 +42,7 @@ int audio_callback(void *buffer, size_t size, void *user_data) {
 	return writeToConsumer(tts, WAVE_SIZE);
 }
 
-TTS_t* tts_create(ru_tts_callback wave_consumer) {
+RUTTS_EXPORT TTS_t* tts_create(ru_tts_callback wave_consumer) {
 	if (wave_consumer == NULL) {
 		return NULL;
 	}
@@ -68,7 +68,7 @@ TTS_t* tts_create(ru_tts_callback wave_consumer) {
 	return tts;
 }
 
-void tts_destroy(TTS_t *tts) {
+RUTTS_EXPORT void tts_destroy(TTS_t *tts) {
 	if (tts == NULL) {
 		return;
 	}
@@ -84,16 +84,16 @@ void tts_destroy(TTS_t *tts) {
 	free(tts);
 }
 
-void tts_speak(const TTS_t *tts, const ru_tts_conf_t *config, const char *text) {
+RUTTS_EXPORT void tts_speak(const TTS_t *tts, const ru_tts_conf_t *config, const char *text) {
 	ru_tts_transfer(config, text, tts->buffer, WAVE_SIZE, audio_callback, (void*)tts);
 	sonicFlushStream(tts->stream);
 	writeToConsumer(tts, 1);
 }
 
-void tts_setVolume(const TTS_t *tts, float volume) {
+RUTTS_EXPORT void tts_setVolume(const TTS_t *tts, float volume) {
 	sonicSetVolume(tts->stream, volume);
 }
 
-void tts_setSpeed(const TTS_t *tts, float speed) {
+RUTTS_EXPORT void tts_setSpeed(const TTS_t *tts, float speed) {
 	sonicSetSpeed(tts->stream, speed);
 }
