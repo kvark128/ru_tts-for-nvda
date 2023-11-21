@@ -9,7 +9,8 @@ RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o s
 PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
 MO_FILES = $(addsuffix .mo, $(basename $(PO_FILES)))
 SYNTH_DIR = synthDrivers/ru_tts
-LICENSES = $(wildcard $(SYNTH_DIR)/LICENSES/*.txt)
+PY_FILES = $(wildcard $(SYNTH_DIR)/*.py)
+LICENSES = $(wildcard $(SYNTH_DIR)/LICENSES/*.txt) $(SYNTH_DIR)/COPYING.txt
 EXT_DIR = ../external
 LEXICON_DIR = $(EXT_DIR)/rulex/data
 LEXHOLDER_DIR = $(EXT_DIR)/rulex/src
@@ -17,9 +18,11 @@ VPATH = $(EXT_DIR)/ru_tts/src $(EXT_DIR)/sonic $(EXT_DIR)/rulex/src $(SYNTH_DIR)
 
 all: ru_tts.nvda-addon
 
+pot: ru_tts.pot
+
 .SILENT: clean
 clean:
-	rm -f *.o *.nvda-addon
+	rm -f *.o *.nvda-addon *.pot
 	$(MAKE) -s -C $(LEXICON_DIR) clean
 	cd $(LEXHOLDER_DIR) && rm -f *.exe
 	cd $(SYNTH_DIR) && rm -f *.dll *.db
@@ -30,6 +33,9 @@ clean:
 
 %.mo: %.po
 	msgfmt -o $@ $<
+
+ru_tts.pot: $(PY_FILES)
+	xgettext --package-name ru_tts -o $@ $^
 
 lexholder.exe: lexholder.o lexdb.o coder.o
 	$(CC) -s $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(RULEX_LIBS)
@@ -44,8 +50,8 @@ $(SYNTH_DIR)/rulex.db: lexholder.exe
 	$(MAKE) -C $(LEXICON_DIR)
 	install -p $(LEXICON_DIR)/lexicon $@
 
-ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec COPYING.txt manifest.ini $(PO_FILES) $(MO_FILES) $(LICENSES)
-	7z a -tzip $@ $^
+ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db config.spec manifest.ini $(PY_FILES) $(PO_FILES) $(MO_FILES) $(LICENSES)
+	7z a -tzip -mx=7 $@ $^
 
 synth.o: synth.c synth.h transcription.h soundscript.h ru_tts.h
 numerics.o: numerics.c numerics.h transcription.h sink.h synth.h ru_tts.h
