@@ -6,12 +6,14 @@ CC = gcc
 CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
 RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
-NVDA_ADDON_DIR = nvda-addon
-NVDA_SYNTH_DIR = $(NVDA_ADDON_DIR)/synthDrivers/ru_tts
-PO_FILES = $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/nvda.po
-LEXICON_DIR = ../external/rulex/data
-LEXHOLDER_DIR = ../external/rulex/src
-VPATH = ../external/ru_tts/src ../external/sonic ../external/rulex/src $(NVDA_SYNTH_DIR)
+PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
+MO_FILES = $(addsuffix .mo, $(basename $(PO_FILES)))
+SYNTH_DIR = synthDrivers/ru_tts
+LICENSES = $(wildcard $(SYNTH_DIR)/LICENSES/*.txt)
+EXT_DIR = ../external
+LEXICON_DIR = $(EXT_DIR)/rulex/data
+LEXHOLDER_DIR = $(EXT_DIR)/rulex/src
+VPATH = $(EXT_DIR)/ru_tts/src $(EXT_DIR)/sonic $(EXT_DIR)/rulex/src $(SYNTH_DIR)
 
 all: ru_tts.nvda-addon
 
@@ -20,29 +22,30 @@ clean:
 	rm -f *.o *.nvda-addon
 	$(MAKE) -s -C $(LEXICON_DIR) clean
 	cd $(LEXHOLDER_DIR) && rm -f *.exe
-	cd $(NVDA_SYNTH_DIR) && rm -f *.dll *.db
-	rm -f $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES/*.mo
+	cd $(SYNTH_DIR) && rm -f *.dll *.db
+	rm -f $(MO_FILES)
 
 %.o: %.c
-	$(CC) -c -I../external/ru_tts/src -I../external/sonic $(CFLAGS) $< -o $@
+	$(CC) -c -I$(EXT_DIR)/ru_tts/src -I$(EXT_DIR)/sonic $(CFLAGS) -o $@ $<
+
+%.mo: %.po
+	msgfmt -o $@ $<
 
 lexholder.exe: lexholder.o lexdb.o coder.o
 	$(CC) -s $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(RULEX_LIBS)
 
-ru_tts.dll: ru_tts_nvda.o sonic.o $(RU_TTS_OBJS)
-	$(CC) -shared -s $(CFLAGS) -o $(NVDA_SYNTH_DIR)/$@ $^
+$(SYNTH_DIR)/ru_tts.dll: ru_tts_nvda.o sonic.o $(RU_TTS_OBJS)
+	$(CC) -shared -s $(CFLAGS) -o $@ $^
 
-rulex.dll: lexdb.o coder.o
-	$(CC) -shared -s $(CFLAGS) -o $(NVDA_SYNTH_DIR)/$@ $^ $(RULEX_LIBS)
+$(SYNTH_DIR)/rulex.dll: lexdb.o coder.o
+	$(CC) -shared -s $(CFLAGS) -o $@ $^ $(RULEX_LIBS)
 
-rulex.db: lexholder.exe
+$(SYNTH_DIR)/rulex.db: lexholder.exe
 	$(MAKE) -C $(LEXICON_DIR)
-	install -p $(LEXICON_DIR)/lexicon $(NVDA_SYNTH_DIR)/$@
+	install -p $(LEXICON_DIR)/lexicon $@
 
-ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec COPYING.txt $(NVDA_ADDON_DIR)/manifest.ini $(PO_FILES)
-	for dir in $(NVDA_ADDON_DIR)/locale/*/LC_MESSAGES; do \
-	msgfmt -o $$dir/nvda.mo $$dir/nvda.po; done
-	cd $(NVDA_ADDON_DIR) && 7z a -tzip ../$@ *
+ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db __init__.py config.spec COPYING.txt manifest.ini $(PO_FILES) $(MO_FILES) $(LICENSES)
+	7z a -tzip $@ $^
 
 synth.o: synth.c synth.h transcription.h soundscript.h ru_tts.h
 numerics.o: numerics.c numerics.h transcription.h sink.h synth.h ru_tts.h
