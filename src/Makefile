@@ -8,6 +8,7 @@ RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
 RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
 MO_FILES = $(addsuffix .mo, $(basename $(PO_FILES)))
+MANIFESTS = manifest.ini $(wildcard locale/*/manifest.ini)
 SYNTH_DIR = synthDrivers/ru_tts
 PY_FILES = $(wildcard $(SYNTH_DIR)/*.py)
 LICENSES = $(wildcard $(SYNTH_DIR)/LICENSES/*.txt) $(SYNTH_DIR)/COPYING.txt
@@ -50,7 +51,7 @@ $(SYNTH_DIR)/rulex.db: lexholder.exe
 	$(MAKE) -C $(LEXICON_DIR)
 	install -p $(LEXICON_DIR)/lexicon $@
 
-ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db config.spec manifest.ini $(PY_FILES) $(PO_FILES) $(MO_FILES) $(LICENSES)
+ru_tts.nvda-addon: ru_tts.dll rulex.dll rulex.db config.spec $(MANIFESTS) $(PY_FILES) $(PO_FILES) $(MO_FILES) $(LICENSES)
 	7z a -tzip -mx=7 $@ $^
 
 synth.o: synth.c synth.h transcription.h soundscript.h ru_tts.h
