@@ -4,6 +4,7 @@
 
 CC = gcc
 CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC
+LDFLAGS = -L. -static -s
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
 RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
@@ -25,7 +26,7 @@ pot: ru_tts.pot
 clean:
 	rm -f *.o *.nvda-addon *.pot
 	$(MAKE) -s -C $(LEXICON_DIR) clean
-	cd $(LEXHOLDER_DIR) && rm -f *.exe
+	cd $(LEXHOLDER_DIR) && rm -f lexholder
 	cd $(SYNTH_DIR) && rm -f *.dll *.db
 	rm -f $(MO_FILES)
 
@@ -38,16 +39,16 @@ clean:
 ru_tts.pot: $(PY_FILES)
 	xgettext --package-name ru_tts -o $@ $^
 
-lexholder.exe: lexholder.o lexdb.o coder.o
-	$(CC) -s $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(RULEX_LIBS)
+lexholder: lexholder.o lexdb.o coder.o
+	$(CC) $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(LDFLAGS) $(RULEX_LIBS)
 
 $(SYNTH_DIR)/ru_tts.dll: ru_tts_nvda.o sonic.o $(RU_TTS_OBJS)
-	$(CC) -shared -s $(CFLAGS) -o $@ $^
+	$(CC) -shared $(LDFLAGS) $(CFLAGS) -o $@ $^
 
 $(SYNTH_DIR)/rulex.dll: lexdb.o coder.o
-	$(CC) -shared -s $(CFLAGS) -o $@ $^ $(RULEX_LIBS)
+	$(CC) -shared $(CFLAGS) -o $@ $^ $(LDFLAGS) $(RULEX_LIBS)
 
-$(SYNTH_DIR)/rulex.db: lexholder.exe
+$(SYNTH_DIR)/rulex.db: lexholder
 	$(MAKE) -C $(LEXICON_DIR)
 	install -p $(LEXICON_DIR)/lexicon $@
 
