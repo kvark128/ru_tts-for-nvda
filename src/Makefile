@@ -3,8 +3,10 @@
 # Copyright (C) 2023 Alexander Linkov <kvark128@yandex.ru>
 
 CC = gcc
-CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC
-LDFLAGS = -L. -static -s
+HEADER_PATH = "."
+LIB_PATH = "."
+CFLAGS = -Wall -Werror -Wno-unused-result -m32 -O2 -DPCRE2_STATIC -I$(HEADER_PATH)
+LDFLAGS = -L. -static -s -L$(LIB_PATH)
 RULEX_LIBS = -ldb -lpthread -lpcre2-posix -lpcre2-8
 RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
