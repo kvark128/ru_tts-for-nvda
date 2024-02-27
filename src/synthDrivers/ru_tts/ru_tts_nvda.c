@@ -32,7 +32,7 @@ int writeToConsumer(const TTS_t *tts, const int minSamples) {
 int audio_callback(void *buffer, size_t size, void *user_data) {
 	signed char *samples = (signed char*) buffer;
 	TTS_t *tts = (TTS_t*) user_data;
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		// Sonic не поддерживает аудиоданные в форме signed char. Преобразуем signed char в unsigned char
 		samples[i] ^= 0x80;
 	}

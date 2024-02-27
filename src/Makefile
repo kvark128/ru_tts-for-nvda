@@ -3,8 +3,8 @@
 # Copyright (C) 2023 Alexander Linkov <kvark128@yandex.ru>
 
 CC = i686-w64-mingw32-gcc
-EXTROOT = "."
-CFLAGS = -Wall -Werror -Wno-unused-result -O2 -DPCRE2_STATIC -I$(EXTROOT)/include
+EXTROOT = .
+CFLAGS = -Wall -Wextra -Werror -Wno-unused-parameter -Wno-sign-compare -Wno-implicit-fallthrough -O2 -DPCRE2_STATIC -I$(EXTROOT)/include
 LDFLAGS = -static -s -L$(EXTROOT)/lib -ldb -lpthread -lpcre2-posix -lpcre2-8
 RU_TTS_OBJS = utterance.o transcription.o time_planner.o text2speech.o synth.o speechrate_control.o soundproducer.o sink.o numerics.o male.o intonator.o female.o
 PO_FILES = $(wildcard locale/*/LC_MESSAGES/nvda.po)
@@ -40,13 +40,13 @@ ru_tts.pot: $(PY_FILES)
 	xgettext --package-name ru_tts -o $@ $^
 
 lexholder: lexholder.o lexdb.o coder.o
-	$(CC) $(CFLAGS) -o $(LEXHOLDER_DIR)/$@ $^ $(LDFLAGS)
+	$(CC) -o $(LEXHOLDER_DIR)/$@ $^ $(LDFLAGS)
 
 $(SYNTH_DIR)/ru_tts.dll: ru_tts_nvda.o sonic.o $(RU_TTS_OBJS)
-	$(CC) -shared $(LDFLAGS) $(CFLAGS) -o $@ $^
+	$(CC) -shared -o $@ $^ $(LDFLAGS)
 
 $(SYNTH_DIR)/rulex.dll: lexdb.o coder.o
-	$(CC) -shared $(CFLAGS) -o $@ $^ $(LDFLAGS)
+	$(CC) -shared -o $@ $^ $(LDFLAGS)
 
 $(SYNTH_DIR)/rulex.db: lexholder
 	$(MAKE) -C $(LEXICON_DIR)
